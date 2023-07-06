@@ -1,25 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { styled } from "@mui/system";
+import MainRouter from "./components/MainRouter";
 
-function App() {
+const Main = styled("main")`
+  width: 100%;
+  height: 100vh;
+  background-color: #1f2833;
+  color: #c5c6c7;
+`;
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Main>
+      <MainRouter />
+    </Main>
   );
-}
+};
 
 export default App;
