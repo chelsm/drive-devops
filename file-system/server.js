@@ -46,7 +46,7 @@ function clearPath(path) {
     }
 
     if (path[path.length - 1] === '/') {
-        path = path.substring(0, req.path.length - 1);
+        path = path.substring(0, path - 1);
     }
 
     return path;
