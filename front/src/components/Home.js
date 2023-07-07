@@ -27,7 +27,7 @@ const Container = styled("div")`
 const Home = () => {
   return (
     <Container>
-      <h1>Bienvenu sur EfreiDrive</h1>
+      <h1>Bienvenue sur EfreiDrive</h1>
       <p>
         Stockez vos photos et fichiers sur EfreiDrive pour y accéder depuis
         n’importe quel appareil, où que vous soyez.
@@ -36,10 +36,11 @@ const Home = () => {
         <Button variant="contained" className="btn" href="/login">
           Se connecter
         </Button>
-        <Button variant="outlined" className="btn" href="/login">
+        <Button variant="outlined" className="btn" href="/signup">
           Créer un compte
         </Button>
       </div>
+      
     </Container>
   );
 };

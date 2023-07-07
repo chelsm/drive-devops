@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { styled } from "@mui/system";
-import {
-  TextField as TextFieldMui,
-  Button,
-  Link,
-} from "@mui/material";
+import { TextField as TextFieldMui, Button, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -21,17 +17,12 @@ const Container = styled("div")`
   }
 `;
 
-const Warning = styled("span")`
-  color: red;
-  font-weight: bold;
-`;
-
 const TextField = styled(TextFieldMui)`
   min-width: 450px;
   margin-bottom: 1em;
 `;
 
-const LoginCard = styled("form")`
+const SignupCard = styled("form")`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,41 +33,37 @@ const LoginCard = styled("form")`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const Login = () => {
-  const navigate = useNavigate();
+const Warning = styled("span")`
+  color: red;
+  font-weight: bold;
+`;
 
-  const [isValid, setIsValid] = useState(true);
+const Signup = () => {
+  const navigate = useNavigate();
+  const [isComplete, setIsComplete] = useState(true);
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3003/login", {
+      const response = await axios.post("http://localhost:3003/signup", {
         login,
         password,
       });
-      setIsValid(true);
-      navigate("/files");
+      console.log(response.data);
+      navigate("/login");
+
     } catch (error) {
-      setIsValid(false);
       console.error("Erreur de connexion :", error);
     }
+    setIsComplete(login && password);
   };
-
-  // const getAuth = async () => {
-  //   try {
-  //     const auth = await axios.get('http://localhost:3001/authentifie');
-  //     console.log('auth',(auth))
-  //   } catch (error) {
-  //     console.error('Erreur de connexion :', error);
-  //   }
-  // }
 
   return (
     <Container>
-      <LoginCard onSubmit={handleLogin}>
-        <h1>Se connecter</h1>
+      <SignupCard onSubmit={handleSignup}>
+        <h1>Créer un compte</h1>
         <TextField
           label="Identifiant"
           variant="outlined"
@@ -88,17 +75,17 @@ const Login = () => {
           variant="outlined"
           onChange={(e) => setPassword(e.target.value)}
         />
-        {!isValid && <Warning>Utilisateur inconnu</Warning>}
-
-        <Link href="/signup" variant="body2">
-          {"Pas encore de compte ? S'inscrire"}
+        <Link href="/login" variant="body2">
+          Déjà un compte ? Se connecter
         </Link>
+        {!isComplete && <Warning>Veuillez remplir le formulaire</Warning>}
+
         <Button variant="contained" color="primary" type="submit">
-          Se connecter
+          Valider
         </Button>
-      </LoginCard>
+      </SignupCard>
     </Container>
   );
 };
 
-export default Login;
+export default Signup;
