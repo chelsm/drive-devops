@@ -16,8 +16,9 @@ services:
       - 8080:80
     depends_on:
       - mysql
-    secrets:
-      - mysql_root_password
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
 
 secrets:
   mysql_root_password:
