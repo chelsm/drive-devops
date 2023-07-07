@@ -1,15 +1,17 @@
 import express, { json } from 'express';
 import { createConnection } from 'mysql';
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt'
+
 
 // Config BDD
 const bddConfig = {
   // host: 'root',
   user: 'root',
   password: '',
-  database: 'efrei_drive'
+  database: 'efrei_drive',
+  port: 3306
 };
 
 const connection = createConnection(bddConfig);
@@ -110,7 +112,7 @@ app.post('/signup', (req, res) => {
 // On va récup un user, ma foi faudrait privatiser la route hin :p
 app.get('/users/:id', (req, res) => {
   const { id } = req.params;
-  const sql = 'SELECT * FROM utilisateur WHERE id = ?';
+  const sql = 'SELECT * FROM users WHERE id = ?';
   connection.query(sql, [id], (error, results) => {
     if (error) {
       console.error('Erreur lors de la récupération de l\'user :', error);
@@ -151,7 +153,7 @@ app.get('/logout', (req, res) => {
 app.put('/users/:id', (req, res) => {
     const { id } = req.params;
     const { nom } = req.body;
-    const sql = 'UPDATE user SET nom = ?, WHERE id = ?';
+    const sql = 'UPDATE users SET nom = ?, WHERE id = ?';
     connection.query(sql, [nom, id], (error, results) => {
       if (error) {
         console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
@@ -166,7 +168,7 @@ app.put('/users/:id', (req, res) => {
   //SUPPRIMER un user hop !
   app.delete('/users/:id', (req, res) => {
     const { id } = req.params;
-    const sql = 'DELETE FROM user WHERE id = ?';
+    const sql = 'DELETE FROM users WHERE id = ?';
     connection.query(sql, [id], (error, results) => {
       if (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur :', error);
