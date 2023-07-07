@@ -1,216 +1,135 @@
-import express, { json } from 'express';
-import { createConnection } from 'mysql';
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt'
-import session from 'express-session'
-
-
-// Config BDD
-const bddConfig = {
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'TestDB',
-  port: 3306
-};
-
-const connection = createConnection(bddConfig);
-
-
-connection.connect(error => {
-  if (error) {
-    console.error('Argh .. Echec de connexion:', error);
-    return;
-  }
-  console.log('Base de donnée connectée ;D');
-});
-
-
-// Configuration de session
-app.use(
-  session({
-    secret: 'secret',
-    resave: false,
-    saveUninitialized: false
-  })
-);
-
-// Configuration de la stratégie locale de Passport
-passport.use(new LocalStrategy(
-  (username, password, done) => {
-    const sql = 'SELECT * FROM users WHERE login = ?';
-    connection.query(sql, [username], (error, results) => {
-      if (error) {
-        console.error('Erreur lors de la récupération de l\'utilisateur :', error);
-        return done(error);
-      }
-      if (results.length === 0) {
-        return done(null, false, { message: 'Nom d\'utilisateur incorrect' });
-      }
-      const user = results[0];
-      bcrypt.compare(password, user.password, (bcryptError, isMatch) => {
-        if (bcryptError) {
-          console.error('Erreur lors de la comparaison des mots de passe :', bcryptError);
-          return done(bcryptError);
-        }
-        if (!isMatch) {
-          return done(null, false, { message: 'Mot de passe incorrect' });
-        }
-        return done(null, user);
-      });
-    });
-  }
-));
-
-// Sérialisation de l'utilisateur pour le stockage dans la session
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-// Désérialisation de l'utilisateur à partir de la session
-passport.deserializeUser((id, done) => {
-  const sql = 'SELECT * FROM users WHERE id = ?';
-  connection.query(sql, [id], (error, results) => {
-    if (error) {
-      console.error('Erreur lors de la récupération de l\'utilisateur :', error);
-      return done(error);
-    }
-    if (results.length === 0) {
-      return done(null, false);
-    }
-    const user = results[0];
-    done(null, user);
-  });
-});
-
-
-
-
+import express from 'express';
+import mysql from 'mysql';
+import bcrypt from 'bcrypt';
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
 
 const app = express();
-app.use(json());
-app.use(passport.initialize());
-app.use(passport.session());
 
+const dbConfig = {
+  host: 'localhost',
+  user: 'your_mysql_user',
+  password: 'your_mysql_password',
+  database: 'your_database_name',
+};
 
+const jwtSecret = 'secret'; // Clé secrète pour signer les tokens JWT
 
+const connection = mysql.createConnection(dbConfig);
 
+connection.connect((err) => {
+  if (err) {
+    console.error('Erreur de connexion à la base de données :', err);
+  } else {
+    console.log('Connecté à la base de données MySQL.');
+  }
+});
 
+app.use(cors());
+app.use(express.json());
 
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, jwtSecret, { expiresIn: '1h' });
+};
 
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization'];
 
-//Simplement une création d'user, mdp hashé bien sûr !!
+  if (!token) {
+    return res.sendStatus(401);
+  }
+
+  jwt.verify(token, jwtSecret, (err, decoded) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
+
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
 app.post('/signup', (req, res) => {
   const { login, password } = req.body;
-  const sql = 'INSERT INTO users (login, password) VALUES (?, ?)';
-  bcrypt.hash(password, 10, (error, hashedPassword) => {
-    if (error) {
-      console.error('Erreur lors du hachage du mot de passe :', error);
-      res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
-      return;
-    }
-    connection.query(sql, [login, hashedPassword], (dbError, results) => {
-      if (dbError) {
-        console.error('Erreur lors de la création de l\'utilisateur :', dbError);
-        res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
-        return;
-      }
-      const nouvelUtilisateur = { id: results.insertId, login };
 
-      // Ajoutez cette ligne pour connecter automatiquement l'utilisateur après l'inscription
-      req.login(nouvelUtilisateur, (loginError) => {
-        if (loginError) {
-          console.error('Erreur lors de la connexion de l\'utilisateur :', loginError);
-          res.status(500).json({ error: 'Erreur lors de la connexion de l\'utilisateur' });
-          return;
+  connection.query('SELECT * FROM users WHERE login = ?', [login], async (error, results) => {
+    if (error) {
+      console.error('Erreur lors de la vérification du login existant :', error);
+      res.sendStatus(500);
+    } else if (results.length > 0) {
+      res.status(409).send('Ce login existe déjà.');
+    } else {
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = {
+          login,
+          password: hashedPassword,
+        };
+
+        const insertQuery = 'INSERT INTO users SET ?';
+        connection.query(insertQuery, user, (insertError, insertResult) => {
+          if (insertError) {
+            console.error('Erreur lors de la création de l\'utilisateur :', insertError);
+            res.sendStatus(500);
+          } else {
+            const userId = insertResult.insertId;
+            const token = generateToken(userId);
+            res.status(201).json({ id: userId, token });
+          }
+        });
+      } catch (hashError) {
+        console.error('Erreur lors du hachage du mot de passe :', hashError);
+        res.sendStatus(500);
+      }
+    }
+  });
+});
+
+app.post('/login', (req, res) => {
+  const { login, password } = req.body;
+
+  connection.query('SELECT * FROM users WHERE login = ?', [login], async (error, results) => {
+    if (error) {
+      console.error('Erreur lors de la récupération de l\'utilisateur :', error);
+      res.sendStatus(500);
+    } else if (results.length === 0) {
+      res.sendStatus(401);
+    } else {
+      try {
+        const user = results[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (isMatch) {
+          const token = generateToken(user.id);
+          res.status(200).json({ id: user.id, token });
+        } else {
+          res.sendStatus(401);
         }
-        res.status(201).json(nouvelUtilisateur);
-      });
-    });
+      } catch (compareError) {
+        console.error('Erreur lors de la comparaison des mots de passe :', compareError);
+        res.sendStatus(500);
+      }
+    }
   });
 });
 
-// On va récup un user, ma foi faudrait privatiser la route hin :p
-app.get('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'SELECT * FROM users WHERE id = ?';
-  connection.query(sql, [id], (error, results) => {
+app.get('/profile', verifyToken, (req, res) => {
+  const userId = req.userId;
+
+  connection.query('SELECT * FROM users WHERE id = ?', [userId], (error, results) => {
     if (error) {
-      console.error('Erreur lors de la récupération de l\'user :', error);
-      res.status(500).json({ error: 'Erreur lors de la récupération de l\'user' });
-      return;
+      console.error('Erreur lors de la récupération des informations de l\'utilisateur :', error);
+      res.sendStatus(500);
+    } else if (results.length === 0) {
+      res.sendStatus(404);
+    } else {
+      const user = results[0];
+      res.status(200).json({ id: user.id, login: user.login });
     }
-    if (results.length === 0) {
-      res.status(404).json({ error: 'User non trouvé' });
-      return;
-    }
-    res.json(results[0]);
   });
 });
 
-
-// La on va juste s'authentifier en récuprant les infos dans le local storage pour générer une session :D
-app.post('/login', passport.authenticate('local'), (req, res) => {
-  res.json({ message: 'Authentification réussie' });
+app.listen(3000, () => {
+  console.log('Le serveur est démarré sur le port 3000.');
 });
-
-// Celle ci permet de vérifier le statut authentifié ou non !
-app.get('/authentifie', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json({ authentifie: true });
-  } else {
-    res.json({ authentifie: false });
-  }
-});
-
-// la on déconnecte le user !
-app.get('/logout', (req, res) => {
-  req.logout();
-  res.json({ message: 'Utilisateur déconnecté' });
-});
-
-
-//modifie un user, faudrait la rendre privée :t
-app.put('/users/:id', (req, res) => {
-    const { id } = req.params;
-    const { nom } = req.body;
-    const sql = 'UPDATE users SET nom = ?, WHERE id = ?';
-    connection.query(sql, [nom, id], (error, results) => {
-      if (error) {
-        console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
-        res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'utilisateur' });
-        return;
-      }
-      res.json({ message: 'Utilisateur mis à jour avec succès' });
-    });
-  });
-  
-  
-  //SUPPRIMER un user hop !
-  app.delete('/users/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = 'DELETE FROM users WHERE id = ?';
-    connection.query(sql, [id], (error, results) => {
-      if (error) {
-        console.error('Erreur lors de la suppression de l\'utilisateur :', error);
-        res.status(500).json({ error: 'Erreur lors de la suppression de l\'utilisateur' });
-        return;
-      }
-      res.json({ message: 'Utilisateur supprimé' });
-    });
-  });
-
-
-  // Au cas ou ca puisse etre utile, petite fonction pour privatiser une route
-  const checkIfAuth = (req, res, next) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ error: 'Bah tu n es pas authentifie !' });
-  }
-  
-  const port = 3000;
-  app.listen(port, () => {
-    console.log(`Serveur Express démarré sur le port ${port}`);
-  });
