@@ -153,14 +153,18 @@ const Files = () => {
   };
 
   const handleAddFile = async (formData) => {
+    formData.append("path", "/");
+    formData.append("username", "test");
+
     try {
-      await apiClient.post("/save", formData, {
+      await axios({
+        method: "post",
+        url: "http://localhost:3000/save",
+        data: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        path: "/",
-        username: "test",
-      });
+            "Content-Type": "multipart/form-data",
+        }
+      })
 
       fetchFiles();
     } catch (error) {

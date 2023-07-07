@@ -90,10 +90,10 @@ app.post("/files", (req, res) => {
 });
 
 // Request handler to save a file to the file system
-app.post("/save", upload.array(), (req, res) => {
+app.post("/save", upload.single('file'), (req, res) => {
   const path = clearPath(req.body.path, req.body.username);
 
-  if (req.files.length === 0) {
+  if (req.file === undefined) {
     res.send("No file uploaded!");
     return;
   }
@@ -102,7 +102,7 @@ app.post("/save", upload.array(), (req, res) => {
     createDirectory("./files/" + path);
   }
 
-  saveFile("./files/" + path, req.files[0]);
+  saveFile("./files/" + path, req.file);
   res.send("File saved!");
 });
 
