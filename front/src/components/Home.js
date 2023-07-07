@@ -27,7 +27,7 @@ const Container = styled("div")`
 const Home = () => {
   return (
     <Container>
-      <h1>Bienvenu sur EfreiDrive</h1>
+      <h1>Bienvenue sur EfreiDrive</h1>
       <p>
         Stockez vos photos et fichiers sur EfreiDrive pour y accéder depuis
         n’importe quel appareil, où que vous soyez.

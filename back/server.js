@@ -7,10 +7,10 @@ import cors from 'cors';
 
 // Config BDD
 const bddConfig = {
-  host: 'localhost',
+  host: 'mysql',
   user: 'root',
-  password: '',
-  database: 'efrei_drive',
+  password: 'password',
+  database: 'efreidevops',
   port: 3306
 };
 const connection = createConnection(bddConfig);
@@ -87,7 +87,7 @@ app.use(passport.session());
 
 
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: '*'
 }));
 
 
