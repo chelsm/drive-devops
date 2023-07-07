@@ -3,14 +3,15 @@ import { createConnection } from 'mysql';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt'
+import session from 'express-session'
 
 
 // Config BDD
 const bddConfig = {
-  host: '',
-  user: '',
-  password: '',
-  database: '',
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'TestDB',
   port: 3306
 };
 
@@ -25,10 +26,20 @@ connection.connect(error => {
   console.log('Base de donnée connectée ;D');
 });
 
+
+// Configuration de session
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false
+  })
+);
+
 // Configuration de la stratégie locale de Passport
 passport.use(new LocalStrategy(
   (username, password, done) => {
-    const sql = 'SELECT * FROM users WHERE pseudo = ?';
+    const sql = 'SELECT * FROM users WHERE login = ?';
     connection.query(sql, [username], (error, results) => {
       if (error) {
         console.error('Erreur lors de la récupération de l\'utilisateur :', error);
@@ -75,6 +86,8 @@ passport.deserializeUser((id, done) => {
 
 
 
+
+
 const app = express();
 app.use(json());
 app.use(passport.initialize());
@@ -89,22 +102,31 @@ app.use(passport.session());
 
 //Simplement une création d'user, mdp hashé bien sûr !!
 app.post('/signup', (req, res) => {
-  const { pseudo, password } = req.body;
-  const sql = 'INSERT INTO users (pseudo, password) VALUES (?, ?)';
+  const { login, password } = req.body;
+  const sql = 'INSERT INTO users (login, password) VALUES (?, ?)';
   bcrypt.hash(password, 10, (error, hashedPassword) => {
     if (error) {
       console.error('Erreur lors du hachage du mot de passe :', error);
       res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
       return;
     }
-    connection.query(sql, [pseudo, hashedPassword], (dbError, results) => {
+    connection.query(sql, [login, hashedPassword], (dbError, results) => {
       if (dbError) {
         console.error('Erreur lors de la création de l\'utilisateur :', dbError);
         res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
         return;
       }
-      const nouvelUtilisateur = { id: results.insertId, pseudo };
-      res.status(201).json(nouvelUtilisateur);
+      const nouvelUtilisateur = { id: results.insertId, login };
+
+      // Ajoutez cette ligne pour connecter automatiquement l'utilisateur après l'inscription
+      req.login(nouvelUtilisateur, (loginError) => {
+        if (loginError) {
+          console.error('Erreur lors de la connexion de l\'utilisateur :', loginError);
+          res.status(500).json({ error: 'Erreur lors de la connexion de l\'utilisateur' });
+          return;
+        }
+        res.status(201).json(nouvelUtilisateur);
+      });
     });
   });
 });
@@ -128,7 +150,7 @@ app.get('/users/:id', (req, res) => {
 });
 
 
-// La on va juste s'authentifier en stockant les infos dans le local storage pour générer une session :D
+// La on va juste s'authentifier en récuprant les infos dans le local storage pour générer une session :D
 app.post('/login', passport.authenticate('local'), (req, res) => {
   res.json({ message: 'Authentification réussie' });
 });
