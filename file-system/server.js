@@ -6,6 +6,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const upload = multer();
+const jwt = require('jsonwebtoken');
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -77,15 +78,32 @@ function deleteFileOrDirectory(path) {
     }
 }
 
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, "myNonSecretKeyDocker", (err, user) => {
+        console.log(err);
+
+        if (err) return res.sendStatus(403);
+
+        req.user = user;
+        next();
+    })
+}
+
 // Request handler to return all files in the file system as JSON
-app.post('/files', (req, res) => {
+app.post('/files', authenticateToken, (req, res) => {
     const path = clearPath(req.body.path, req.body.username);
 
     res.json(getFiles(path));
 });
 
 // Request handler to save a file to the file system
-app.post('/save', upload.array(), (req, res) => {
+app.post('/save', authenticateToken, upload.array(), (req, res) => {
     const path = clearPath(req.body.path, req.body.username);
 
     if (req.files.length === 0) {
@@ -102,7 +120,7 @@ app.post('/save', upload.array(), (req, res) => {
 });
 
 // Request handler to create a directory in the file system
-app.post('/create-directory', (req, res) => {
+app.post('/create-directory', authenticateToken, (req, res) => {
     const path = clearPath(req.body.path, req.body.username);
 
     createDirectory('./files/' + path);
@@ -110,10 +128,33 @@ app.post('/create-directory', (req, res) => {
 });
 
 // Request handler to delete a file
-app.post('/delete', (req, res) => {
+app.post('/delete', authenticateToken, (req, res) => {
     const path = clearPath(req.body.path, req.body.username);
 
     res.send(deleteFileOrDirectory('./files/' + path));
+})
+
+// Request handler to get the content of a file
+app.post('/get-file-content', authenticateToken, (req, res) => {
+    const path = clearPath(req.body.path, req.body.username);
+
+    console.log(path)
+
+    try {
+        res.sendFile(path, { root: './files' })
+    } catch (err) {
+        res.send('File not found!');
+    }
+})
+
+app.post('/login', (req, res) => {
+    // Authenticate User
+
+    const username = req.body.username;
+    const user = { name: username };
+
+    const accessToken = jwt.sign(user, "myNonSecretKeyDocker");
+    res.json({ accessToken: accessToken });
 })
 
 app.listen(port, () => console.log(`File system listening on port ${port}!`));
