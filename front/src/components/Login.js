@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { styled } from "@mui/system";
-import { TextField as TextFieldMui, Button, Link, Typography } from "@mui/material";
+import {
+  TextField as TextFieldMui,
+  Button,
+  Link,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 
 const Container = styled("div")`
   display: flex;
@@ -45,62 +49,53 @@ const Login = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    console.log('getAuth log',)
-    getAuth()
-
-  } ,[isValid])
-
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const log = await axios.post('http://localhost:3001/login', {
+      await axios.post("http://localhost:3001/login", {
         login,
-        password
+        password,
       });
-      setIsValid(true)
+      setIsValid(true);
       navigate("/files");
-
     } catch (error) {
-      setIsValid(false)
-      console.error('Erreur de connexion :', error);
+      setIsValid(false);
+      console.error("Erreur de connexion :", error);
     }
   };
 
-
-  const getAuth = async () => {
-    try {
-      const auth = await axios.get('http://localhost:3001/authentifie');
-      console.log('auth', auth);
-    } catch (error) {
-      console.error('Erreur de connexion :', error);
-    }
-  }
-
+  // const getAuth = async () => {
+  //   try {
+  //     const auth = await axios.get('http://localhost:3001/authentifie');
+  //     console.log('auth',(auth))
+  //   } catch (error) {
+  //     console.error('Erreur de connexion :', error);
+  //   }
+  // }
 
   return (
     <Container>
       <LoginCard onSubmit={handleLogin}>
         <h1>Se connecter</h1>
-          <TextField
-            label="Identifiant"
-            variant="outlined"
-            onChange={(e) => setLogin(e.target.value)} 
-          />
-          <TextField 
-            label="Mot de passe"
-            type="password"
-            variant="outlined"
-            onChange={(e) => setPassword(e.target.value)} 
-          />
-          {!isValid && <Warning>Utilisateur inconnu</Warning>}
+        <TextField
+          label="Identifiant"
+          variant="outlined"
+          onChange={(e) => setLogin(e.target.value)}
+        />
+        <TextField
+          label="Mot de passe"
+          type="password"
+          variant="outlined"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {!isValid && <Warning>Utilisateur inconnu</Warning>}
 
-          <Link href="/signup" variant="body2">
-            {"Pas encore de compte ? S'inscrire"}
-          </Link>
-          <Button variant="contained" color="primary" type="submit">
-            Se connecter
-          </Button>
+        <Link href="/signup" variant="body2">
+          {"Pas encore de compte ? S'inscrire"}
+        </Link>
+        <Button variant="contained" color="primary" type="submit">
+          Se connecter
+        </Button>
       </LoginCard>
     </Container>
   );

@@ -14,8 +14,9 @@ const bddConfig = {
   database: 'efrei_drive',
   port: 3306
 };
-
 const connection = createConnection(bddConfig);
+
+let userId
 
 connection.connect(error => {
   if (error) {
@@ -170,35 +171,15 @@ app.post('/login', (req, res) => {
 
     const user = results[0];
 
-    bcrypt.compare(password, user.password, (bcryptError, isMatch) => {
-      if (bcryptError) {
-        console.error('Erreur lors de la comparaison des mots de passe :', bcryptError);
-        res.status(500).json({ error: 'Erreur lors de l\'authentification' });
-        return;
-      }
-
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Nom d\'utilisateur ou mot de passe incorrect' });
-      }
-
-      req.login(user, (loginError) => {
-        if (loginError) {
-          console.error('Erreur lors de la connexion de l\'utilisateur :', loginError);
-          res.status(500).json({ error: 'Erreur lors de la connexion de l\'utilisateur' });
-          return;
-        }
-
-        res.json({ message: 'Authentification réussie' });
-      });
-    });
+    res.status(200).json({ id: user.id});
+    userId =  user.id;
   });
 });
 
 
-
 // Celle ci permet de vérifier le statut authentifié ou non !
 app.get('/authentifie', (req, res) => {
-  if (req.isAuthenticated()) {
+  if (req.sessionID) {
     res.json({ 
       authentifie: true , 
       user: req.user
