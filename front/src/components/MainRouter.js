@@ -9,6 +9,7 @@ const MainRouter = () => (
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/files" element={<Files />} />
+      <Route path="/files/*" element={<Files />} />
     </Routes>
   </Router>
 );

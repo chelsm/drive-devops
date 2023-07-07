@@ -2,8 +2,8 @@ import express, { json } from 'express';
 import { createConnection } from 'mysql';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt'
 import session from 'express-session'
+import cors from 'cors';
 
 
 // Config BDD
@@ -210,7 +210,11 @@ app.put('/users/:id', (req, res) => {
     res.status(401).json({ error: 'Bah tu n es pas authentifie !' });
   }
   
-  const port = 3000;
+  const port = 3002;
   app.listen(port, () => {
     console.log(`Serveur Express démarré sur le port ${port}`);
   });
+
+  app.use(cors({
+    origin: 'http://localhost:3001/'
+  }));
