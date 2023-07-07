@@ -4,7 +4,7 @@ import { styled } from "@mui/system";
 import { Button, TextField, Modal } from "@mui/material";
 
 const apiClient = axios.create({
-  baseURL: "http://nginx",
+  baseURL: "http://nginx:8080",
 });
 
 const AddDirectoryModal = ({

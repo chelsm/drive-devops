@@ -49,7 +49,7 @@ const Container = styled("div")`
 `;
 
 const apiClient = axios.create({
-  baseURL: "http://nginx",
+  baseURL: "http://nginx:8080",
 });
 
 const Files = () => {

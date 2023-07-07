@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { styled } from "@mui/system";
 import axios from "axios";
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import { Button, IconButton, Modal, TextField } from "@mui/material";
+import { Button, Modal } from "@mui/material";
 
 const Wrap = styled("div")`
   background: white;
@@ -34,7 +32,7 @@ const AddFileModal = ({ open, handleClose, currentPath }) => {
     try {
       await axios({
         method: "post",
-        url: "http://nginx/save",
+        url: "http://nginx:8080/save",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
