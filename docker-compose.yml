@@ -1,0 +1,21 @@
+
+version: '1'
+services:
+  filesystem:
+    build:
+      context: ./file-system
+      dockerfile: dockerfile
+    networks:
+      - drivedevops
+  nginx:
+    build: 
+      context: ./proxy-reverse
+      dokcerfile: dockerfile
+      networks:
+      - drivedevops
+
+volumes:
+  db_data:
+networks:
+    drivedevops:
+    bddnetwork:
