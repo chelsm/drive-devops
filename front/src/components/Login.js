@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/system";
 import { TextField as TextFieldMui, Button, Link, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -42,51 +42,41 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [isValid, setIsValid] = useState(true);
-  const [pseudo, setPseudo] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  // const userData = [
-  //   {
-  //     identifiant: "chels",
-  //     password: "123",
-  //   },
-  //   {
-  //     identifiant: "maanu",
-  //     password: "123",
-  //   },
-  // ];
+  useEffect(() => {
+    console.log('getAuth log',)
+    getAuth()
 
+  } ,[isValid])
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("click llog");
-    // const user = userData.find(
-    //   (user) => user.identifiant === identifiant && user.password === password
-    // );
-    // if (user) {
-    //   navigate("/files");
-    //   setIsValid(true)
-
-    // } else {
-    //   setIsValid(false)
-    //   console.log("Identifiants invalides");
-    // }
-
-    console.log('pseudo :', pseudo);
-    console.log('password :', password);
-
-
-
     try {
-      const response = await axios.post('http://localhost:3001/login', { pseudo, password });
-      console.log(response.data); 
+      const log = await axios.post('http://localhost:3001/login', {
+        login,
+        password
+      });
       setIsValid(true)
+      navigate("/files");
 
     } catch (error) {
       setIsValid(false)
       console.error('Erreur de connexion :', error);
     }
   };
+
+
+  const getAuth = async () => {
+    try {
+      const auth = await axios.get('http://localhost:3001/authentifie');
+      console.log('auth', auth);
+    } catch (error) {
+      console.error('Erreur de connexion :', error);
+    }
+  }
+
 
   return (
     <Container>
@@ -95,7 +85,7 @@ const Login = () => {
           <TextField
             label="Identifiant"
             variant="outlined"
-            onChange={(e) => setPseudo(e.target.value)} 
+            onChange={(e) => setLogin(e.target.value)} 
           />
           <TextField 
             label="Mot de passe"

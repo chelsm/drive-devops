@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/system";
 import { TextField as TextFieldMui, Button, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +41,7 @@ const Warning = styled("span")`
 const Signup = () => {
   const navigate = useNavigate();
   const [isComplete, setIsComplete] = useState(true);
-  const [pseudo, setPseudo] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
   // const handleLogin = () => {
@@ -50,19 +50,18 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    console.log("click signup");
-    console.log(pseudo, password);
     try {
       const response = await axios.post("http://localhost:3001/signup", {
-        pseudo,
+        login,
         password,
       });
       console.log(response.data);
+      navigate("/login");
+
     } catch (error) {
       console.error("Erreur de connexion :", error);
     }
-    setIsComplete(pseudo && password);
+    setIsComplete(login && password);
   };
 
   return (
@@ -72,7 +71,7 @@ const Signup = () => {
         <TextField
           label="Identifiant"
           variant="outlined"
-          onChange={(e) => setPseudo(e.target.value)}
+          onChange={(e) => setLogin(e.target.value)}
         />
         <TextField
           label="Mot de passe"
