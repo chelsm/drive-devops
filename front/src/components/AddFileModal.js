@@ -32,7 +32,7 @@ const AddFileModal = ({ open, handleClose, currentPath }) => {
     try {
       await axios({
         method: "post",
-        url: "http://nginx:8080/save",
+        url: "http://localhost:3000/save",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",

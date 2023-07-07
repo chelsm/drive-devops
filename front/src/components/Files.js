@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { styled } from "@mui/system";
+import LogOutButton from "./LogOutButton";
 import axios from "axios";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
@@ -49,10 +50,25 @@ const Container = styled("div")`
 `;
 
 const apiClient = axios.create({
-  baseURL: "http://nginx:8080",
+  baseURL: "http://localhost:3000",
 });
 
 const Files = () => {
+  useEffect(() => {
+    console.log("getAuth files");
+    getAuth();
+  }, []);
+
+  const [pseudo, setPseudo] = useState("");
+
+  const getAuth = async () => {
+    try {
+      const auth = await axios.get("http://localhost:3001/authentifie");
+      setPseudo(auth.data.user);
+    } catch (error) {
+      console.error("Erreur de connexion :", error);
+    }
+  };
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -87,7 +103,7 @@ const Files = () => {
     try {
       const response = await apiClient.post("/files", {
         path: currentPath,
-        username: "test",
+        username: pseudo,
       });
       setFiles(response.data);
     } catch (error) {
@@ -98,6 +114,7 @@ const Files = () => {
   return (
     <Container>
       <h1>Liste des fichiers</h1>
+      <LogOutButton />
 
       <div className="buttons">
         <Button onClick={() => setOpenDirectoryModal(true)} variant="contained">
