@@ -1,0 +1,62 @@
+services:
+  mysql:
+    build:
+      context: ./bdd
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - PMA_HOST=${PMA_HOST}
+      - PMA_PORT=${PMA_PORT}
+    networks:
+      - bddnetwork
+
+  filesystem:
+    build:
+      context: ./file-system
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - filesystem:/files
+    networks:
+      - drivedevops
+
+#  back:
+#    build:
+#      context: ./back
+#      dockerfile: Dockerfile
+#    restart: always
+#    volumes:
+#      - nodemodules:/node_modules
+#    networks:
+#      - drivedevops
+#      - bddnetwork
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - drivedevops
+
+  nginx:
+    build:
+      context: ./proxy-reverse
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - drivedevops
+
+volumes:
+  db_data:
+  filesystem:
+  nodemodules:
+networks:
+    drivedevops:
+    bddnetwork:
