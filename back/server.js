@@ -2,7 +2,6 @@ import express, { json } from 'express';
 import { createConnection } from 'mysql';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt'
 import session from 'express-session'
 import cors from 'cors';
 
@@ -52,16 +51,7 @@ passport.use(new LocalStrategy(
         return done(null, false, { message: 'Nom d\'utilisateur incorrect' });
       }
       const user = results[0];
-      bcrypt.compare(password, user.password, (bcryptError, isMatch) => {
-        if (bcryptError) {
-          console.error('Erreur lors de la comparaison des mots de passe :', bcryptError);
-          return done(bcryptError);
-        }
-        if (!isMatch) {
-          return done(null, false, { message: 'Mot de passe incorrect' });
-        }
-        return done(null, user);
-      });
+      return done(null, user);
     });
   }
 ));
@@ -108,31 +98,15 @@ app.use(cors({
 app.post('/signup', (req, res) => {
   const { login, password } = req.body;
   const sql = 'INSERT INTO users (login, password) VALUES (?, ?)';
-  bcrypt.hash(password, 10, (error, hashedPassword) => {
-    if (error) {
-      console.error('Erreur lors du hachage du mot de passe :', error);
-      res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur ' });
+  // Ajoutez cette ligne pour connecter automatiquement l'utilisateur après l'inscription
+  req.login(nouvelUtilisateur, (loginError) => {
+    if (loginError) {
+      console.error('Erreur lors de la connexion de l\'utilisateur :', loginError);
+      res.status(500).json({ error: 'Erreur lors de la connexion de l\'utilisateur' });
       return;
     }
-    connection.query(sql, [login, hashedPassword], (dbError, results) => {
-      if (dbError) {
-        console.error('Erreur lors de la création de l\'utilisateur  :', dbError);
-        res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur ' });
-        return;
-      }
-      const nouvelUtilisateur = { id: results.insertId, login };
+    res.status(201).json(nouvelUtilisateur);
 
-      // Ajoutez cette ligne pour connecter automatiquement l'utilisateur après l'inscription
-      req.login(nouvelUtilisateur, (loginError) => {
-        if (loginError) {
-          console.error('Erreur lors de la connexion de l\'utilisateur :', loginError);
-          res.status(500).json({ error: 'Erreur lors de la connexion de l\'utilisateur' });
-          return;
-        }
-        res.status(201).json(nouvelUtilisateur);
-      });
-    });
-  });
 });
 
 // On va récup un user, ma foi faudrait privatiser la route hin :p
@@ -242,3 +216,4 @@ app.put('/users/:id', (req, res) => {
   app.listen(port, () => {
     console.log(`Serveur Express démarré sur le port ${port}`);
   });
+});
