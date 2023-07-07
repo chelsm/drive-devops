@@ -44,14 +44,10 @@ const Signup = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  // const handleLogin = () => {
-  //   navigate("/files");
-  // };
-
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/signup", {
+      const response = await axios.post("http://localhost:3003/signup", {
         login,
         password,
       });

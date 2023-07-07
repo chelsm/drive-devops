@@ -102,7 +102,7 @@ app.post('/signup', (req, res) => {
     }
     res.status(201).json(nouvelUtilisateur);
 
-});
+})});
 
 // On va récup un user, ma foi faudrait privatiser la route hin :p
 app.get('/users/:id', (req, res) => {
@@ -207,9 +207,9 @@ app.put('/users/:id', (req, res) => {
     res.status(401).json({ error: 'Bah tu n es pas authentifie !' });
   }
   
-  const port = 3002;
+  const port = 3003;
   app.listen(port, () => {
     console.log(`Serveur Express démarré sur le port ${port}`);
   });
 
-
+  
