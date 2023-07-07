@@ -42,23 +42,24 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [isValid, setIsValid] = useState(true);
-  const [identifiant, setIdentifiant] = useState("");
+  const [pseudo, setPseudo] = useState("");
   const [password, setPassword] = useState("");
 
-  const userData = [
-    {
-      identifiant: "chels",
-      password: "123",
-    },
-    {
-      identifiant: "maanu",
-      password: "123",
-    },
-  ];
+  // const userData = [
+  //   {
+  //     identifiant: "chels",
+  //     password: "123",
+  //   },
+  //   {
+  //     identifiant: "maanu",
+  //     password: "123",
+  //   },
+  // ];
 
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log("click llog");
     // const user = userData.find(
     //   (user) => user.identifiant === identifiant && user.password === password
     // );
@@ -71,12 +72,18 @@ const Login = () => {
     //   console.log("Identifiants invalides");
     // }
 
+    console.log('pseudo :', pseudo);
+    console.log('password :', password);
+
 
 
     try {
-      const response = await axios.post('/login', { identifiant, password });
+      const response = await axios.post('http://localhost:3001/login', { pseudo, password });
       console.log(response.data); 
+      setIsValid(true)
+
     } catch (error) {
+      setIsValid(false)
       console.error('Erreur de connexion :', error);
     }
   };
@@ -88,7 +95,7 @@ const Login = () => {
           <TextField
             label="Identifiant"
             variant="outlined"
-            onChange={(e) => setIdentifiant(e.target.value)} 
+            onChange={(e) => setPseudo(e.target.value)} 
           />
           <TextField 
             label="Mot de passe"
