@@ -36,10 +36,11 @@ const Home = () => {
         <Button variant="contained" className="btn" href="/login">
           Se connecter
         </Button>
-        <Button variant="outlined" className="btn" href="/login">
+        <Button variant="outlined" className="btn" href="/signup">
           Créer un compte
         </Button>
       </div>
+      
     </Container>
   );
 };
