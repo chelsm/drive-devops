@@ -29,14 +29,18 @@ function isDirectory(path) {
 }
 
 function getFiles(path = '') {
-    const content = fs.readdirSync('./files/' + path);
+    try {
+        const content = fs.readdirSync('./files/' + path);
 
-    return content.map((file) => {
-        return {
-            "type": isDirectory('./files/' + path + '/' + file) ? 'directory' : 'file',
-            "name": file,
-        }
-    });
+        return content.map((file) => {
+            return {
+                "type": isDirectory('./files/' + path + '/' + file) ? 'directory' : 'file',
+                "name": file,
+            }
+        });
+    } catch (err) {
+        return "Directory not found!";
+    }
 }
 
 function clearPath(path, user) {
