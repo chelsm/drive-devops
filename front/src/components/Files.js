@@ -49,7 +49,7 @@ const Container = styled("div")`
 `;
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://nginx",
 });
 
 const Files = () => {
@@ -74,7 +74,7 @@ const Files = () => {
   };
 
   const goToDirectory = async (filePath) => {
-    setCurrentPath(currentPath + "/"+ filePath);
+    setCurrentPath(currentPath + "/" + filePath);
     navigate(filePath);
   };
 
