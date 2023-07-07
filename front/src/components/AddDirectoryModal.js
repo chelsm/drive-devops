@@ -4,19 +4,20 @@ import { styled } from "@mui/system";
 import { Button, TextField, Modal } from "@mui/material";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://nginx:8080",
 });
 
 const AddDirectoryModal = ({
   handleCloseModalDirectory,
   openDirectoryModal,
+  currentPath,
 }) => {
   const [directoryName, setDirectoryName] = useState("/");
 
   const handleSubmit = async () => {
     try {
       await apiClient.post("/create-directory", {
-        path: directoryName,
+        path: currentPath + "/" + directoryName,
         username: "test",
       });
       handleCloseModalDirectory();
@@ -25,8 +26,10 @@ const AddDirectoryModal = ({
     }
   };
 
-  const Wrap = styled('div')`
+  const Wrap = styled("div")`
     background: white;
+    margin: auto;
+    padding: 3rem;
   `;
 
   return (

@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { styled } from "@mui/system";
 import axios from "axios";
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import { Button, IconButton, Modal, TextField } from "@mui/material";
+import { Button, Modal } from "@mui/material";
 
-const AddFileModal = ({ open, handleClose }) => {
+const Wrap = styled("div")`
+  background: white;
+  margin: auto;
+  padding: 3rem;
+`;
+
+const AddFileModal = ({ open, handleClose, currentPath }) => {
   const [uploadedFile, setUploadedFile] = useState("");
 
   const handleSubmit = (event) => {
@@ -22,13 +26,13 @@ const AddFileModal = ({ open, handleClose }) => {
   };
 
   const handleAddFile = async (formData) => {
-    formData.append("path", "/");
+    formData.append("path", currentPath);
     formData.append("username", "test");
 
     try {
       await axios({
         method: "post",
-        url: "http://localhost:3000/save",
+        url: "http://nginx:8080/save",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
@@ -43,7 +47,7 @@ const AddFileModal = ({ open, handleClose }) => {
 
   return (
     <Modal open={open} onClose={handleClose} className="modal">
-      <div>
+      <Wrap>
         <h2>Ajouter un fichier</h2>
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <input
@@ -56,7 +60,7 @@ const AddFileModal = ({ open, handleClose }) => {
             Ajouter
           </Button>
         </form>
-      </div>
+      </Wrap>
     </Modal>
   );
 };
