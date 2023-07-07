@@ -6,10 +6,10 @@ const bcrypt = require('bcrypt');
 
 // Config BDD
 const bddConfig = {
-  host: '',
-  user: '',
+  // host: 'root',
+  user: 'root',
   password: '',
-  database: ''
+  database: 'efrei_drive'
 };
 
 const connection = createConnection(bddConfig);
@@ -186,7 +186,7 @@ app.put('/users/:id', (req, res) => {
     res.status(401).json({ error: 'Bah tu n es pas authentifie !' });
   }
   
-  const port = 3000;
+  const port = 3001;
   app.listen(port, () => {
     console.log(`Serveur Express démarré sur le port ${port}`);
   });
